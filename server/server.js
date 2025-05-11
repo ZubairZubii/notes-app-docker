@@ -11,7 +11,7 @@ require("dotenv").config();
 
 // Connecting to Database
 mongoose
-  .connect(process.env.dbURL, {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -22,17 +22,27 @@ mongoose
   )
   .catch((error) => console.log(error));
 
+
 // Middlewares
 app.use(express.json()); // JSON Parser
 app.use(express.urlencoded({ extended: true })); // URL Body Parser
 
-// CORS
-app.use(
-  cors({
-    origin: "*",
-    // credentials: true,
-  })
-);
+// Updated CORS configuration for the Express server
+const corsOptions = {
+  origin: ['http://localhost', 'http://localhost:80', 'http://frontend', '*'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// For debugging purposes, log all incoming requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Request headers:', req.headers);
+  next();
+});
 
 // Routes
 const routes = require("./routes/routes");

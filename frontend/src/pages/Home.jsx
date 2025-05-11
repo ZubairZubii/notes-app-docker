@@ -3,6 +3,7 @@ import AddNote from "../components/AddNote";
 import NoteCard from "../components/NoteCard";
 import axios from "axios";
 
+
 export default function Home() {
     const msgStyle = {
         justifyContent: "center",
@@ -14,10 +15,11 @@ export default function Home() {
         fontSize: "1.3em",
     };
     const [notes, setNotes] = useState([]);
+
     useEffect(() => {
         const fetchNotes = () => {
             axios
-                .get("https://mern-notes-backend-5z2j.onrender.com/allNotes")
+                .get(`${import.meta.env.VITE_APP_API_URL}/allNotes`)  // <-- Using the env variable
                 .then((res) => {
                     if (res.data.content) {
                         setNotes(res.data.content);
@@ -31,6 +33,7 @@ export default function Home() {
         };
         fetchNotes();
     }, []);
+
     return (
         <div>
             <h1 className="headline">

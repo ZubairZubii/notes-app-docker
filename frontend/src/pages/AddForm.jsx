@@ -18,28 +18,73 @@ export default function AddForm() {
     const navigate = useNavigate();
     const submitHandler = (event) => {
       event.preventDefault();
+      
+      // Try these URLs in order until one works
+      const backendUrls = [
+          import.meta.env.VITE_APP_API_URL,
+          'http://localhost:5000',
+          'http://server:5000',
+          '/api'
+      ];
+      
+      const url = backendUrls[0] || backendUrls[1];
+      console.log('Attempting POST to:', `${url}/addNote`);
+      console.log('Note Data:', note);
+      
       axios
-        .post(`https://mern-notes-backend-5z2j.onrender.com/addNote`, note)
-        .then(() => {
-          navigate('/');
-          Swal.fire({
-            title: 'Your note has been added successfully!',
-            showClass: {
-              popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-              popup: 'animate__animated animate__fadeOutUp'
-            }
+          .post(`${url}/addNote`, note)
+          .then((response) => {
+              console.log('Success response:', response.data);
+              navigate('/');
+              Swal.fire({
+                  title: 'Your note has been added successfully!',
+                  showClass: {
+                      popup: 'animate__animated animate__fadeInDown'
+                  },
+                  hideClass: {
+                      popup: 'animate__animated animate__fadeOutUp'
+                  }
+              });
           })
-        })
-        .catch((err) => {err.data.msg});
-    };
+          .catch((err) => {
+              console.error('Failed to add note:', err);
+              
+              // Try the next URL if available
+              if (backendUrls.length > 1) {
+                  const nextUrl = backendUrls[1];
+                  console.log('Retrying with next URL:', `${nextUrl}/addNote`);
+                  
+                  axios.post(`${nextUrl}/addNote`, note)
+                      .then((response) => {
+                          console.log('Success with fallback URL:', response.data);
+                          navigate('/');
+                          Swal.fire({
+                              title: 'Your note has been added successfully!',
+                              showClass: {
+                                  popup: 'animate__animated animate__fadeInDown'
+                              },
+                              hideClass: {
+                                  popup: 'animate__animated animate__fadeOutUp'
+                              }
+                          });
+                      })
+                      .catch((secondErr) => {
+                          console.error('Failed with second URL:', secondErr);
+                          Swal.fire('Error', 'Could not add note. Try again later.', 'error');
+                      });
+              } else {
+                  Swal.fire('Error', 'Could not add note. Try again later.', 'error');
+              }
+          });
+  };
+  
+    
     return (
         <div>
             <h1 className="headline">
                 Add <span>Note</span>
             </h1>
-            <form className="note-form">
+            <form className="note-form" onSubmit={submitHandler}>
                 <input
                     type="text"
                     name="title"
@@ -51,12 +96,12 @@ export default function AddForm() {
                 <textarea
                     name="details"
                     rows="5"
-                    defaultValue={note.details}
+                    value={note.details}
                     onChange={changeHandler}
-                    placeholder="Descride Your Note ..."
+                    placeholder="Describe Your Note ..."
                     required
                 ></textarea>
-                <button type="submit" onClick={submitHandler}>Save Note</button>
+                <button type="submit">Save Note</button>
             </form>
         </div>
     );

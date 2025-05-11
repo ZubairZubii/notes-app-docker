@@ -22,12 +22,13 @@ const get_all_notes = (req, res) => {
 
 // To add a new note to the database
 const add_note = (req, res) => {
+  console.log('Received note:', req.body);  // Debugging line
   let note = new Note(req.body);
   note
     .save()
     .then((result) => {
       res.json({
-        msg: "Your note was saved successfully!",
+        msg: 'Your note was saved successfully!',
         content: result,
       });
     })
